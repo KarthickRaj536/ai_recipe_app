@@ -160,21 +160,29 @@ export default function PantryPage() {
           </Button>
 
           {/* Usage Stats */}
-          {itemsData?.scansUsed !== undefined && (
+          {itemsData?.scansLimit !== undefined && (
             <div className="bg-white py-3 px-4 border-2 border-stone-200 inline-flex items-center gap-3">
               <Sparkles className="w-5 h-5 text-orange-600" />
               <div className="text-sm">
-                <span className="font-bold text-stone-900">
-                  {itemsData.scansUsed}
-                </span>
-                <span className="text-stone-500">
-                  {" "}
-                  /{" "}
-                  {itemsData.scansLimit === "unlimited"
-                    ? "∞"
-                    : itemsData.scansLimit}{" "}
-                  AI scans used this month
-                </span>
+                {itemsData.scansLimit === "unlimited" ? (
+                  <>
+                    <span className="font-bold text-green-600">∞</span>
+                    <span className="text-stone-500">
+                      {" "}
+                      Unlimited AI scans (Pro Plan)
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <span className="font-bold text-stone-900">
+                      {itemsData.scansLimit}
+                    </span>
+                    <span className="text-stone-500">
+                      {" "}
+                      AI scans available this month
+                    </span>
+                  </>
+                )}
               </div>
             </div>
           )}

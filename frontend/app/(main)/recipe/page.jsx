@@ -31,6 +31,7 @@ import { toast } from "sonner";
 import Image from "next/image";
 import { PDFDownloadLink } from "@react-pdf/renderer";
 import { RecipePDF } from "@/components/RecipePDF";
+import { ClockLoader } from "react-spinners";
 
 function RecipeContent() {
   const searchParams = useSearchParams();
@@ -150,7 +151,7 @@ function RecipeContent() {
       <div className="min-h-screen bg-stone-50 pt-24 pb-16 px-4">
         <div className="container mx-auto max-w-4xl">
           <div className="text-center py-20">
-            <Loader2 className="w-16 h-16 text-orange-600 animate-spin mx-auto mb-6" />
+            <ClockLoader className="mx-auto mb-6" color="#dc6300" />
             <h2 className="text-3xl font-bold text-stone-900 mb-2 tracking-tight">
               Preparing Your Recipe
             </h2>
@@ -161,8 +162,8 @@ function RecipeContent() {
             </p>
             <div className="mt-8 max-w-md mx-auto">
               <div className="flex items-center gap-3 text-sm text-stone-500">
-                <div className="flex-1 h-1 bg-stone-200 overflow-hidden">
-                  <div className="h-full bg-orange-600 animate-pulse w-3/4"></div>
+                <div className="flex-1 h-1 bg-stone-200 overflow-hidden relative">
+                  <div className="absolute left-0 top-0 h-full bg-orange-600 animate-slow-fill" />
                 </div>
               </div>
             </div>

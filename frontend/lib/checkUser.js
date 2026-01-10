@@ -93,9 +93,6 @@ export const checkUser = async () => {
       lastName: user.lastName || "",
       imageUrl: user.imageUrl || "",
       subscriptionTier,
-      pantryScansUsed: 0,
-      mealRecommendationsUsed: 0,
-      recipesCreated: 0,
     };
 
     const newUserResponse = await fetch(`${STRAPI_URL}/api/users`, {

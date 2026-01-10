@@ -107,6 +107,15 @@ export function getCountryFlag(country) {
     Turkish: "🇹🇷",
     Ukrainian: "🇺🇦",
     Vietnamese: "🇻🇳",
+    Algerian: "🇩🇿",
+    Argentinian: "🇦🇷",
+    Australian: "🇦🇺",
+    Norwegian: "🇳🇴",
+    "Saudi Arabian": "🇸🇦",
+    Slovakian: "🇸🇰",
+    Syrian: "🇸🇾",
+    Uruguayan: "🇺🇾",
+    Venezulan: "🇻🇪",
   };
   return flagMap[country] || "🌍";
 }

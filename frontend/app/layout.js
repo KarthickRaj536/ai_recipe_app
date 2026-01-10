@@ -9,7 +9,7 @@ import Image from "next/image";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
-  title: "AI Recipes Platform",
+  title: "Servd - AI Recipes Platform",
   description: "",
 };
 
@@ -21,9 +21,9 @@ export default function RootLayout({ children }) {
       }}
     >
       <html lang="en" suppressHydrationWarning>
-        {/* <head>
+        <head>
           <link rel="icon" href="/logo.png" sizes="any" />
-        </head> */}
+        </head>
         <body className={`${inter.className}`}>
           <Header />
           <main className="min-h-screen">{children}</main>

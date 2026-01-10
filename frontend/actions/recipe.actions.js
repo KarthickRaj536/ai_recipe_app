@@ -1,13 +1,15 @@
 "use server";
 
-import { GoogleGenerativeAI } from "@google/generative-ai";
 import { checkUser } from "@/lib/checkUser";
+import { GoogleGenerativeAI } from "@google/generative-ai";
+import { freeMealRecommendations, proTierLimit } from "@/lib/arcjet";
+import { request } from "@arcjet/next";
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const STRAPI_URL =
   process.env.NEXT_PUBLIC_STRAPI_URL || "http://localhost:1337";
 const STRAPI_API_TOKEN = process.env.STRAPI_API_TOKEN;
-const UNSPLASH_ACCESS_KEY = process.env.UNSPLASH_ACCESS_KEY; // Add this to .env.local
+const UNSPLASH_ACCESS_KEY = process.env.UNSPLASH_ACCESS_KEY;
 
 const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
 
@@ -28,7 +30,6 @@ async function fetchRecipeImage(recipeName) {
       return "";
     }
 
-    // Search for food-related images
     const searchQuery = `${recipeName}`;
     const response = await fetch(
       `https://api.unsplash.com/search/photos?query=${encodeURIComponent(
@@ -51,8 +52,6 @@ async function fetchRecipeImage(recipeName) {
     if (data.results && data.results.length > 0) {
       const photo = data.results[0];
       console.log("✅ Found Unsplash image:", photo.urls.regular);
-
-      // Return the regular size image URL
       return photo.urls.regular;
     }
 
@@ -131,12 +130,37 @@ export async function getOrGenerateRecipe(formData) {
     // Step 2: Recipe doesn't exist, generate with Gemini
     console.log("🤖 Recipe not found, generating with Gemini...");
 
-    // Check rate limit for free tier
-    if (user.subscriptionTier === "free" && user.mealRecommendationsUsed >= 5) {
-      throw new Error(
-        "Monthly AI recipe limit reached. Upgrade to Pro for unlimited recipes!"
-      );
+    // ✅ ARCJET RATE LIMIT CHECK
+    const isPro = user.subscriptionTier === "pro";
+    const arcjetClient = isPro ? proTierLimit : freeMealRecommendations;
+
+    // Create a request object for Arcjet
+    const req = await request();
+
+    const decision = await arcjetClient.protect(req, {
+      userId: user.clerkId,
+      requested: 1,
+    });
+
+    if (decision.isDenied()) {
+      if (decision.reason.isRateLimit()) {
+        const resetDate = new Date(decision.reason.resetTime * 1000);
+        throw new Error(
+          `Monthly AI recipe limit reached. Resets on ${resetDate.toLocaleDateString()}. ${
+            isPro
+              ? "Please contact support."
+              : "Upgrade to Pro for unlimited recipes!"
+          }`
+        );
+      }
+      throw new Error("Request denied");
     }
+
+    const remaining = decision.reason.isRateLimit()
+      ? decision.reason.remaining
+      : isPro
+      ? "unlimited"
+      : null;
 
     const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite" });
 
@@ -226,7 +250,7 @@ Guidelines:
       throw new Error("Failed to generate recipe. Please try again.");
     }
 
-    // FORCE the title to be our normalized version (in case Gemini ignores instructions)
+    // FORCE the title to be our normalized version
     recipeData.title = normalizedTitle;
 
     // Validate and sanitize category
@@ -291,7 +315,7 @@ Guidelines:
         nutrition: recipeData.nutrition,
         tips: recipeData.tips,
         substitutions: recipeData.substitutions,
-        imageUrl: imageUrl || "", // Add the fetched image URL
+        imageUrl: imageUrl || "",
         isPublic: true,
         author: user.id,
       },
@@ -320,18 +344,6 @@ Guidelines:
     const createdRecipe = await createRecipeResponse.json();
     console.log("✅ Recipe saved to database:", createdRecipe.data.id);
 
-    // Step 5: Increment mealRecommendationsUsed counter
-    await fetch(`${STRAPI_URL}/api/users/${user.id}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${STRAPI_API_TOKEN}`,
-      },
-      body: JSON.stringify({
-        mealRecommendationsUsed: user.mealRecommendationsUsed + 1,
-      }),
-    });
-
     return {
       success: true,
       recipe: {
@@ -339,13 +351,13 @@ Guidelines:
         title: normalizedTitle,
         category,
         cuisine,
-        imageUrl: imageUrl || "", // Include image in response
+        imageUrl: imageUrl || "",
       },
       recipeId: createdRecipe.data.id,
       isSaved: false,
       fromDatabase: false,
-      recommendationsUsed: user.mealRecommendationsUsed + 1,
-      recommendationsLimit: user.subscriptionTier === "pro" ? "unlimited" : 5,
+      remaining,
+      recommendationsLimit: isPro ? "unlimited" : 5,
       message: "Recipe generated and saved successfully!",
     };
   } catch (error) {
@@ -491,20 +503,43 @@ export async function removeRecipeFromCollection(formData) {
   }
 }
 
-// ✅ NEW: Get recipes based on pantry ingredients
-export async function getRecipesByPantryIngredients(formData) {
+// Get recipes based on pantry ingredients
+export async function getRecipesByPantryIngredients() {
   try {
     const user = await checkUser();
     if (!user) {
       throw new Error("User not authenticated");
     }
 
-    // Check rate limit for free tier
-    if (user.subscriptionTier === "free" && user.mealRecommendationsUsed >= 5) {
-      throw new Error(
-        "Monthly AI recipe limit reached. Upgrade to Pro for unlimited recipes!"
-      );
+    // ✅ ARCJET RATE LIMIT CHECK
+    const isPro = user.subscriptionTier === "pro";
+    const arcjetClient = isPro ? proTierLimit : freeMealRecommendations;
+
+    // Create a request object for Arcjet
+    const req = await request();
+
+    const decision = await arcjetClient.protect(req, {
+      userId: user.clerkId,
+      requested: 1,
+    });
+
+    if (decision.isDenied()) {
+      if (decision.reason.isRateLimit()) {
+        const resetDate = new Date(decision.reason.resetTime * 1000);
+        throw new Error(
+          `Monthly AI recipe limit reached. Resets on ${resetDate.toLocaleDateString()}. ${
+            isPro ? "Please contact support." : "Upgrade to Pro!"
+          }`
+        );
+      }
+      throw new Error("Request denied");
     }
+
+    const remaining = decision.reason.isRateLimit()
+      ? decision.reason.remaining
+      : isPro
+      ? "unlimited"
+      : null;
 
     // Get user's pantry items
     const pantryResponse = await fetch(
@@ -524,7 +559,10 @@ export async function getRecipesByPantryIngredients(formData) {
     const pantryData = await pantryResponse.json();
 
     if (!pantryData.data || pantryData.data.length === 0) {
-      throw new Error("Your pantry is empty. Add ingredients first!");
+      return {
+        success: false,
+        message: "Your pantry is empty. Add ingredients first!",
+      };
     }
 
     const ingredients = pantryData.data.map((item) => item.name).join(", ");
@@ -548,7 +586,8 @@ Return ONLY a valid JSON array (no markdown, no explanations):
     "category": "breakfast|lunch|dinner|snack|dessert",
     "cuisine": "italian|chinese|mexican|etc",
     "prepTime": 20,
-    "cookTime": 30
+    "cookTime": 30,
+    "servings": 4
   }
 ]
 
@@ -577,24 +616,12 @@ Rules:
       );
     }
 
-    // Increment mealRecommendationsUsed
-    await fetch(`${STRAPI_URL}/api/users/${user.id}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${STRAPI_API_TOKEN}`,
-      },
-      body: JSON.stringify({
-        mealRecommendationsUsed: user.mealRecommendationsUsed + 1,
-      }),
-    });
-
     return {
       success: true,
       recipes: recipeSuggestions,
       ingredientsUsed: ingredients,
-      recommendationsUsed: user.mealRecommendationsUsed + 1,
-      recommendationsLimit: user.subscriptionTier === "pro" ? "unlimited" : 5,
+      remaining,
+      recommendationsLimit: isPro ? "unlimited" : 5,
       message: `Found ${recipeSuggestions.length} recipes you can make!`,
     };
   } catch (error) {

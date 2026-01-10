@@ -15,6 +15,7 @@ import PricingModal from "./PricingModal";
 import Image from "next/image";
 import { checkUser } from "@/lib/checkUser";
 import { Badge } from "./ui/badge";
+import UserDropdown from "./UserDropdown";
 
 export default async function Header() {
   const user = await checkUser();
@@ -38,8 +39,6 @@ export default async function Header() {
 
         {/* Navigation Links */}
         <div className="hidden md:flex items-center space-x-8 text-sm font-medium text-stone-600">
-          <HowToCookModal />
-
           <Link
             href="/recipes"
             className="hover:text-orange-600 transition-colors flex gap-1.5 items-center"
@@ -58,13 +57,15 @@ export default async function Header() {
 
         {/* Action Buttons */}
         <div className="flex items-center space-x-4">
+          <HowToCookModal />
+
           <SignedIn>
             {/* Pricing Modal with Built-in Trigger */}
             {user && (
               <PricingModal subscriptionTier={user.subscriptionTier}>
                 <Badge
                   variant="outline"
-                  className={`hidden sm:flex h-8 px-3 gap-1.5 rounded-full text-xs font-semibold transition-all ${
+                  className={`flex h-8 px-3 gap-1.5 rounded-full text-xs font-semibold transition-all ${
                     user.subscriptionTier === "pro"
                       ? "bg-linear-to-r from-orange-600 to-amber-500 text-white border-none shadow-sm"
                       : "bg-stone-200/50 text-stone-600 border-stone-200 cursor-pointer hover:bg-stone-300/50 hover:border-stone-300"
@@ -84,7 +85,7 @@ export default async function Header() {
               </PricingModal>
             )}
 
-            <UserButton afterSignOutUrl="/" />
+            <UserDropdown />
           </SignedIn>
 
           <SignedOut>

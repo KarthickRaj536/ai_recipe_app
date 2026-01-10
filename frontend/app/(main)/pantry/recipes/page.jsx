@@ -29,7 +29,7 @@ export default function PantryRecipesPage() {
 
   // Load suggestions on mount
   useEffect(() => {
-    fetchSuggestions(new FormData());
+    fetchSuggestions();
   }, []);
 
   const recipes = recipesData?.recipes || [];
@@ -78,21 +78,30 @@ export default function PantryRecipesPage() {
           )}
 
           {/* Usage Stats */}
-          {recipesData?.recommendationsUsed !== undefined && (
+          {recipesData?.remaining !== undefined && (
             <div className="bg-orange-50 p-4 border-2 border-orange-200 inline-flex items-center gap-3">
               <Sparkles className="w-5 h-5 text-orange-600" />
               <div className="text-sm">
-                <span className="font-bold text-orange-900">
-                  {recipesData.recommendationsUsed}
-                </span>
-                <span className="text-orange-700 font-light">
-                  {" "}
-                  /{" "}
-                  {recipesData.recommendationsLimit === "unlimited"
-                    ? "∞"
-                    : recipesData.recommendationsLimit}{" "}
-                  AI recommendations used this month
-                </span>
+                {recipesData.recommendationsLimit === "unlimited" ? (
+                  <>
+                    <span className="font-bold text-green-600">∞</span>
+                    <span className="text-orange-700 font-light">
+                      {" "}
+                      Unlimited AI recommendations (Pro Plan)
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <span className="font-bold text-orange-900">
+                      {recipesData.remaining}
+                    </span>
+                    <span className="text-orange-700 font-light">
+                      {" "}
+                      / {recipesData.recommendationsLimit} AI recommendations
+                      remaining this month
+                    </span>
+                  </>
+                )}
               </div>
             </div>
           )}

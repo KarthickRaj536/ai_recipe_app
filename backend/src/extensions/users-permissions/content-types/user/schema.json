@@ -80,18 +80,6 @@
     "imageUrl": {
       "type": "string"
     },
-    "pantryScansUsed": {
-      "type": "integer",
-      "default": 0
-    },
-    "mealRecommendationsUsed": {
-      "type": "integer",
-      "default": 0
-    },
-    "recipesCreated": {
-      "type": "integer",
-      "default": 0
-    },
     "pantry_items": {
       "type": "relation",
       "relation": "oneToMany",

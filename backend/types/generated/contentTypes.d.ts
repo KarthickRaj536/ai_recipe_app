@@ -1092,13 +1092,10 @@ export interface PluginUsersPermissionsUser
       'plugin::users-permissions.user'
     > &
       Schema.Attribute.Private;
-    mealRecommendationsUsed: Schema.Attribute.Integer &
-      Schema.Attribute.DefaultTo<0>;
     pantry_items: Schema.Attribute.Relation<
       'oneToMany',
       'api::pantry-item.pantry-item'
     >;
-    pantryScansUsed: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
     password: Schema.Attribute.Password &
       Schema.Attribute.Private &
       Schema.Attribute.SetMinMaxLength<{
@@ -1107,7 +1104,6 @@ export interface PluginUsersPermissionsUser
     provider: Schema.Attribute.String;
     publishedAt: Schema.Attribute.DateTime;
     recipes: Schema.Attribute.Relation<'oneToMany', 'api::recipe.recipe'>;
-    recipesCreated: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
     resetPasswordToken: Schema.Attribute.String & Schema.Attribute.Private;
     role: Schema.Attribute.Relation<
       'manyToOne',

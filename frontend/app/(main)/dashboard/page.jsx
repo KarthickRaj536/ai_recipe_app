@@ -22,12 +22,12 @@ export default async function DashboardPage() {
   const areas = areasData?.areas || [];
 
   return (
-    <div className="min-h-screen bg-stone-50 pt-24 pb-16 px-4">
+    <div className="min-h-screen bg-stone-50 py-16 px-4">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="mb-5">
           <h1 className="text-5xl md:text-7xl font-bold text-stone-900 mb-4 tracking-tight leading-tight">
-            Your Culinary Journey Starts Here
+            Fresh Recipes, Servd Daily 🔥
           </h1>
           <p className="text-xl text-stone-600 font-light max-w-2xl">
             Discover thousands of recipes from around the world. Cook, create,

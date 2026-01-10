@@ -2,6 +2,8 @@
 
 import { checkUser } from "@/lib/checkUser";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { freePantryScans, proTierLimit } from "@/lib/arcjet";
+import { request } from "@arcjet/next";
 
 const STRAPI_URL =
   process.env.NEXT_PUBLIC_STRAPI_URL || "http://localhost:1337";
@@ -18,12 +20,40 @@ export async function scanPantryImage(formData) {
       throw new Error("User not authenticated");
     }
 
-    // Check rate limit for free tier
-    if (user.subscriptionTier === "free" && user.pantryScansUsed >= 10) {
-      throw new Error(
-        "Monthly scan limit reached. Upgrade to Pro for unlimited scans!"
-      );
+    // Check if user is Pro
+    const isPro = user.subscriptionTier === "pro";
+
+    // Apply Arcjet rate limit based on tier
+    const arcjetClient = isPro ? proTierLimit : freePantryScans;
+
+    // Create a request object for Arcjet
+    const req = await request();
+
+    const decision = await arcjetClient.protect(req, {
+      userId: user.clerkId, // Use clerkId from checkUser
+      requested: 1, // Request 1 token from bucket
+    });
+
+    if (decision.isDenied()) {
+      if (decision.reason.isRateLimit()) {
+        const resetDate = new Date(decision.reason.resetTime * 1000);
+        throw new Error(
+          `Monthly scan limit reached. Resets on ${resetDate.toLocaleDateString()}. ${
+            isPro
+              ? "Please contact support if you need more scans."
+              : "Upgrade to Pro for unlimited scans!"
+          }`
+        );
+      }
+      throw new Error("Request denied by security system");
     }
+
+    // Get remaining tokens for display
+    const remaining = decision.reason.isRateLimit()
+      ? decision.reason.remaining
+      : isPro
+      ? "unlimited"
+      : null;
 
     const imageFile = formData.get("image");
     if (!imageFile) {
@@ -75,7 +105,6 @@ Rules:
     // Parse JSON response
     let ingredients;
     try {
-      // Remove markdown code blocks if present
       const cleanText = text
         .replace(/```json\n?/g, "")
         .replace(/```\n?/g, "")
@@ -94,7 +123,9 @@ Rules:
 
     return {
       success: true,
-      ingredients: ingredients.slice(0, 20), // Limit to 20 items
+      ingredients: ingredients.slice(0, 20),
+      remaining,
+      scansLimit: isPro ? "unlimited" : 10,
       message: `Found ${ingredients.length} ingredients!`,
     };
   } catch (error) {
@@ -132,7 +163,7 @@ export async function saveToPantry(formData) {
             name: ingredient.name,
             quantity: ingredient.quantity,
             imageUrl: "",
-            owner: user.id, // ✅ Fixed from "owners"
+            owner: user.id,
           },
         }),
       });
@@ -143,23 +174,9 @@ export async function saveToPantry(formData) {
       }
     }
 
-    // Increment pantryScansUsed
-    await fetch(`${STRAPI_URL}/api/users/${user.id}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${STRAPI_API_TOKEN}`,
-      },
-      body: JSON.stringify({
-        pantryScansUsed: user.pantryScansUsed + 1,
-      }),
-    });
-
     return {
       success: true,
       savedItems,
-      scansUsed: user.pantryScansUsed + 1,
-      scansLimit: user.subscriptionTier === "pro" ? "unlimited" : 10,
       message: `Saved ${savedItems.length} items to your pantry!`,
     };
   } catch (error) {
@@ -168,7 +185,7 @@ export async function saveToPantry(formData) {
   }
 }
 
-// ✅ NEW: Add pantry item manually
+// Add pantry item manually
 export async function addPantryItemManually(formData) {
   try {
     const user = await checkUser();
@@ -242,11 +259,12 @@ export async function getPantryItems() {
 
     const data = await response.json();
 
+    const isPro = user.subscriptionTier === "pro";
+
     return {
       success: true,
       items: data.data || [],
-      scansUsed: user.pantryScansUsed,
-      scansLimit: user.subscriptionTier === "pro" ? "unlimited" : 10,
+      scansLimit: isPro ? "unlimited" : 10,
     };
   } catch (error) {
     console.error("Error fetching pantry:", error);
