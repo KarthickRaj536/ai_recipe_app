@@ -34,13 +34,7 @@ export default clerkMiddleware(async (auth, req) => {
   const decision = await aj.protect(req);
 
   if (decision.isDenied()) {
-    if (decision.reason.isBot()) {
-      return new Response("Forbidden - Bot Detected", { status: 403 });
-    }
-    if (decision.reason.isShield()) {
-      return new Response("Forbidden - Security Violation", { status: 403 });
-    }
-    return new Response("Forbidden", { status: 403 });
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   // Then apply Clerk authentication

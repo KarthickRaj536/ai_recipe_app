@@ -36,9 +36,8 @@ export async function scanPantryImage(formData) {
 
     if (decision.isDenied()) {
       if (decision.reason.isRateLimit()) {
-        const resetDate = new Date(decision.reason.resetTime * 1000);
         throw new Error(
-          `Monthly scan limit reached. Resets on ${resetDate.toLocaleDateString()}. ${
+          `Monthly scan limit reached. ${
             isPro
               ? "Please contact support if you need more scans."
               : "Upgrade to Pro for unlimited scans!"
@@ -47,13 +46,6 @@ export async function scanPantryImage(formData) {
       }
       throw new Error("Request denied by security system");
     }
-
-    // Get remaining tokens for display
-    const remaining = decision.reason.isRateLimit()
-      ? decision.reason.remaining
-      : isPro
-      ? "unlimited"
-      : null;
 
     const imageFile = formData.get("image");
     if (!imageFile) {
@@ -124,7 +116,6 @@ Rules:
     return {
       success: true,
       ingredients: ingredients.slice(0, 20),
-      remaining,
       scansLimit: isPro ? "unlimited" : 10,
       message: `Found ${ingredients.length} ingredients!`,
     };

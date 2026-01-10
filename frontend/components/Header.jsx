@@ -1,15 +1,8 @@
-// components/Header.jsx
 import React from "react";
 import { Button } from "./ui/button";
 import { Cookie, Refrigerator, Sparkles } from "lucide-react";
 import Link from "next/link";
-import {
-  SignedIn,
-  SignedOut,
-  SignInButton,
-  SignUpButton,
-  UserButton,
-} from "@clerk/nextjs";
+import { SignedIn, SignedOut, SignInButton, SignUpButton } from "@clerk/nextjs";
 import HowToCookModal from "./HowToCookModal";
 import PricingModal from "./PricingModal";
 import Image from "next/image";

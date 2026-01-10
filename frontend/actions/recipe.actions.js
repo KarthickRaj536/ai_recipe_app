@@ -144,9 +144,8 @@ export async function getOrGenerateRecipe(formData) {
 
     if (decision.isDenied()) {
       if (decision.reason.isRateLimit()) {
-        const resetDate = new Date(decision.reason.resetTime * 1000);
         throw new Error(
-          `Monthly AI recipe limit reached. Resets on ${resetDate.toLocaleDateString()}. ${
+          `Monthly AI recipe limit reached. ${
             isPro
               ? "Please contact support."
               : "Upgrade to Pro for unlimited recipes!"
@@ -155,12 +154,6 @@ export async function getOrGenerateRecipe(formData) {
       }
       throw new Error("Request denied");
     }
-
-    const remaining = decision.reason.isRateLimit()
-      ? decision.reason.remaining
-      : isPro
-      ? "unlimited"
-      : null;
 
     const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite" });
 
@@ -356,7 +349,6 @@ Guidelines:
       recipeId: createdRecipe.data.id,
       isSaved: false,
       fromDatabase: false,
-      remaining,
       recommendationsLimit: isPro ? "unlimited" : 5,
       message: "Recipe generated and saved successfully!",
     };
@@ -525,21 +517,14 @@ export async function getRecipesByPantryIngredients() {
 
     if (decision.isDenied()) {
       if (decision.reason.isRateLimit()) {
-        const resetDate = new Date(decision.reason.resetTime * 1000);
         throw new Error(
-          `Monthly AI recipe limit reached. Resets on ${resetDate.toLocaleDateString()}. ${
+          `Monthly AI recipe limit reached. ${
             isPro ? "Please contact support." : "Upgrade to Pro!"
           }`
         );
       }
       throw new Error("Request denied");
     }
-
-    const remaining = decision.reason.isRateLimit()
-      ? decision.reason.remaining
-      : isPro
-      ? "unlimited"
-      : null;
 
     // Get user's pantry items
     const pantryResponse = await fetch(
@@ -620,7 +605,6 @@ Rules:
       success: true,
       recipes: recipeSuggestions,
       ingredientsUsed: ingredients,
-      remaining,
       recommendationsLimit: isPro ? "unlimited" : 5,
       message: `Found ${recipeSuggestions.length} recipes you can make!`,
     };

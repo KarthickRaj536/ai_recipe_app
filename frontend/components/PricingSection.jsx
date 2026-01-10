@@ -44,7 +44,7 @@ export default function PricingSection({ subscriptionTier = "free" }) {
                 "10 pantry scans per month",
                 "5 AI meal recommendations",
                 "Standard support",
-                "Public recipe access",
+                "Standard Recipes",
               ].map((item, i) => (
                 <li key={i} className="flex gap-3 text-stone-700">
                   <Check className="h-5 w-5 shrink-0 mt-0.5 text-stone-400" />
@@ -90,8 +90,8 @@ export default function PricingSection({ subscriptionTier = "free" }) {
               {[
                 "Unlimited pantry scans",
                 "Unlimited AI recipes",
-                "Nutritional analysis",
                 "Priority Support",
+                "Recipes with Nutritional analysis",
               ].map((item, i) => (
                 <li key={i} className="flex gap-3 text-orange-950">
                   <Badge className="bg-orange-200 p-1 rounded-full h-6 w-6 flex items-center justify-center border-none">

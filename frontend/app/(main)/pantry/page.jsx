@@ -2,7 +2,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import {
   Plus,
   Trash2,
@@ -25,14 +24,13 @@ import {
 } from "@/actions/pantry.actions";
 import { toast } from "sonner";
 import AddToPantryModal from "@/components/AddToPantryModal";
+import PricingModal from "@/components/PricingModal";
 
 export default function PantryPage() {
-  const router = useRouter();
   const [items, setItems] = useState([]);
   const [editingId, setEditingId] = useState(null);
   const [editValues, setEditValues] = useState({ name: "", quantity: "" });
   const [isModalOpen, setIsModalOpen] = useState(false);
-  console.log(editingId);
 
   // Fetch pantry items
   const {
@@ -173,15 +171,11 @@ export default function PantryPage() {
                     </span>
                   </>
                 ) : (
-                  <>
-                    <span className="font-bold text-stone-900">
-                      {itemsData.scansLimit}
+                  <PricingModal>
+                    <span className="text-stone-500 cursor-pointer">
+                      Upgrade to Pro for unlimited Pantry scans
                     </span>
-                    <span className="text-stone-500">
-                      {" "}
-                      AI scans available this month
-                    </span>
-                  </>
+                  </PricingModal>
                 )}
               </div>
             </div>

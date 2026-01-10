@@ -1,20 +1,15 @@
-// components/PricingModal.jsx
 "use client";
 
 import React, { useState } from "react";
-import { X, Sparkles } from "lucide-react";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
-  DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Badge } from "@/components/ui/badge";
 import PricingSection from "./PricingSection";
 
-export default function PricingModal({ subscriptionTier, children }) {
+export default function PricingModal({ subscriptionTier = "free", children }) {
   const [isOpen, setIsOpen] = useState(false);
 
   // Only allow opening if user is on free plan
@@ -26,7 +21,8 @@ export default function PricingModal({ subscriptionTier, children }) {
         {children}
       </DialogTrigger>
 
-      <DialogContent className="p-8 sm:max-w-4xl">
+      <DialogContent className="p-8 pt-4 sm:max-w-4xl">
+        <DialogTitle />
         <div>
           <PricingSection
             subscriptionTier={subscriptionTier}

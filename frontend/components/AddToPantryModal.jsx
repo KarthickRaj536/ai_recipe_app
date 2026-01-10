@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Camera, Plus, X, Edit2, Check, Loader2 } from "lucide-react";
+import { Camera, Plus, X, Check, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -26,8 +26,6 @@ export default function AddToPantryModal({ isOpen, onClose, onSuccess }) {
   const [activeTab, setActiveTab] = useState("scan");
   const [selectedImage, setSelectedImage] = useState(null);
   const [scannedIngredients, setScannedIngredients] = useState([]);
-  const [editingIndex, setEditingIndex] = useState(null);
-  const [editValues, setEditValues] = useState({ name: "", quantity: "" });
   const [manualItem, setManualItem] = useState({ name: "", quantity: "" });
 
   // Scan image
@@ -90,8 +88,6 @@ export default function AddToPantryModal({ isOpen, onClose, onSuccess }) {
     setActiveTab("scan");
     setSelectedImage(null);
     setScannedIngredients([]);
-    setEditingIndex(null);
-    setEditValues({ name: "", quantity: "" });
     setManualItem({ name: "", quantity: "" });
     onClose();
   };
@@ -132,35 +128,6 @@ export default function AddToPantryModal({ isOpen, onClose, onSuccess }) {
   // Remove scanned ingredient
   const removeIngredient = (index) => {
     setScannedIngredients(scannedIngredients.filter((_, i) => i !== index));
-  };
-
-  // Start editing scanned ingredient
-  const startEdit = (index) => {
-    setEditingIndex(index);
-    setEditValues({
-      name: scannedIngredients[index].name,
-      quantity: scannedIngredients[index].quantity,
-    });
-  };
-
-  // Save edit
-  const saveEdit = () => {
-    if (editingIndex !== null) {
-      const updated = [...scannedIngredients];
-      updated[editingIndex] = {
-        ...updated[editingIndex],
-        name: editValues.name,
-        quantity: editValues.quantity,
-      };
-      setScannedIngredients(updated);
-      setEditingIndex(null);
-    }
-  };
-
-  // Cancel edit
-  const cancelEdit = () => {
-    setEditingIndex(null);
-    setEditValues({ name: "", quantity: "" });
   };
 
   return (
@@ -250,118 +217,52 @@ export default function AddToPantryModal({ isOpen, onClose, onSuccess }) {
                       key={index}
                       className="flex items-center gap-3 p-4 bg-stone-50 rounded-xl border border-stone-200"
                     >
-                      {editingIndex === index ? (
-                        // Edit Mode
-                        <>
-                          <div className="flex-1 flex gap-3">
-                            <input
-                              type="text"
-                              value={editValues.name}
-                              onChange={(e) =>
-                                setEditValues({
-                                  ...editValues,
-                                  name: e.target.value,
-                                })
-                              }
-                              className="flex-1 px-3 py-2 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
-                              placeholder="Ingredient name"
-                            />
-                            <input
-                              type="text"
-                              value={editValues.quantity}
-                              onChange={(e) =>
-                                setEditValues({
-                                  ...editValues,
-                                  quantity: e.target.value,
-                                })
-                              }
-                              className="w-32 px-3 py-2 border border-stone-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
-                              placeholder="Quantity"
-                            />
-                          </div>
-                          <Button
-                            size="sm"
-                            onClick={saveEdit}
-                            className="bg-green-600 hover:bg-green-700"
-                          >
-                            <Check className="w-4 h-4" />
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={cancelEdit}
-                          >
-                            <X className="w-4 h-4" />
-                          </Button>
-                        </>
-                      ) : (
-                        // View Mode
-                        <>
-                          <div className="flex-1">
-                            <div className="font-medium text-stone-900">
-                              {ingredient.name}
-                            </div>
-                            <div className="text-sm text-stone-500">
-                              {ingredient.quantity}
-                            </div>
-                          </div>
-                          {ingredient.confidence && (
-                            <Badge
-                              variant="outline"
-                              className="text-xs text-green-700 border-green-200"
-                            >
-                              {Math.round(ingredient.confidence * 100)}%
-                            </Badge>
-                          )}
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => startEdit(index)}
-                            className="text-stone-600 hover:text-orange-600"
-                          >
-                            <Edit2 className="w-4 h-4" />
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => removeIngredient(index)}
-                            className="text-stone-600 hover:text-red-600"
-                          >
-                            <X className="w-4 h-4" />
-                          </Button>
-                        </>
+                      <div className="flex-1">
+                        <div className="font-medium text-stone-900">
+                          {ingredient.name}
+                        </div>
+                        <div className="text-sm text-stone-500">
+                          {ingredient.quantity}
+                        </div>
+                      </div>
+                      {ingredient.confidence && (
+                        <Badge
+                          variant="outline"
+                          className="text-xs text-green-700 border-green-200"
+                        >
+                          {Math.round(ingredient.confidence * 100)}%
+                        </Badge>
                       )}
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => removeIngredient(index)}
+                        className="text-stone-600 hover:text-red-600"
+                      >
+                        <X className="w-4 h-4" />
+                      </Button>
                     </div>
                   ))}
                 </div>
 
                 {/* Save Button */}
-                <div className="flex gap-3 pt-4 border-t">
-                  <Button
-                    onClick={handleSaveScanned}
-                    disabled={saving || scannedIngredients.length === 0}
-                    className="flex-1 bg-green-600 hover:bg-green-700 text-white h-12"
-                  >
-                    {saving ? (
-                      <>
-                        <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                        Saving...
-                      </>
-                    ) : (
-                      <>
-                        <Check className="w-5 h-5 mr-2" />
-                        Save {scannedIngredients.length} Items to Pantry
-                      </>
-                    )}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={handleClose}
-                    className="border-stone-300"
-                  >
-                    Cancel
-                  </Button>
-                </div>
+                <Button
+                  onClick={handleSaveScanned}
+                  disabled={saving || scannedIngredients.length === 0}
+                  className="flex-1 bg-green-600 hover:bg-green-700 text-white h-12 w-full"
+                >
+                  {saving ? (
+                    <>
+                      <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      <Check className="w-5 h-5 mr-2" />
+                      Save {scannedIngredients.length} Items to Pantry
+                    </>
+                  )}
+                </Button>
               </div>
             )}
           </TabsContent>
@@ -401,33 +302,23 @@ export default function AddToPantryModal({ isOpen, onClose, onSuccess }) {
                 />
               </div>
 
-              <div className="flex gap-3 pt-4">
-                <Button
-                  type="submit"
-                  disabled={adding}
-                  className="flex-1 bg-orange-600 hover:bg-orange-700 text-white h-12"
-                >
-                  {adding ? (
-                    <>
-                      <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                      Adding...
-                    </>
-                  ) : (
-                    <>
-                      <Plus className="w-5 h-5 mr-2" />
-                      Add Item
-                    </>
-                  )}
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={handleClose}
-                  className="border-stone-300"
-                >
-                  Cancel
-                </Button>
-              </div>
+              <Button
+                type="submit"
+                disabled={adding}
+                className="flex-1 bg-orange-600 hover:bg-orange-700 text-white h-12 w-full"
+              >
+                {adding ? (
+                  <>
+                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                    Adding...
+                  </>
+                ) : (
+                  <>
+                    <Plus className="w-5 h-5 mr-2" />
+                    Add Item
+                  </>
+                )}
+              </Button>
             </form>
           </TabsContent>
         </Tabs>
