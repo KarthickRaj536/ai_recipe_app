@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { Bookmark, Loader2, Heart, ChefHat } from "lucide-react";
+import { Bookmark, Loader2, ChefHat } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import useFetch from "@/hooks/use-fetch";
