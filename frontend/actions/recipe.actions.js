@@ -80,6 +80,8 @@ export async function getOrGenerateRecipe(formData) {
     const normalizedTitle = normalizeTitle(recipeName);
     console.log("🔍 Searching for recipe:", normalizedTitle);
 
+    const isPro = user.subscriptionTier === "pro";
+
     // Step 1: Check if recipe already exists in DB (case-insensitive search)
     const searchResponse = await fetch(
       `${STRAPI_URL}/api/recipes?filters[title][$eqi]=${encodeURIComponent(
@@ -122,6 +124,7 @@ export async function getOrGenerateRecipe(formData) {
           recipeId: searchData.data[0].id,
           isSaved: isSaved,
           fromDatabase: true,
+          isPro,
           message: "Recipe loaded from database",
         };
       }
@@ -129,31 +132,6 @@ export async function getOrGenerateRecipe(formData) {
 
     // Step 2: Recipe doesn't exist, generate with Gemini
     console.log("🤖 Recipe not found, generating with Gemini...");
-
-    // ✅ ARCJET RATE LIMIT CHECK
-    const isPro = user.subscriptionTier === "pro";
-    const arcjetClient = isPro ? proTierLimit : freeMealRecommendations;
-
-    // Create a request object for Arcjet
-    const req = await request();
-
-    const decision = await arcjetClient.protect(req, {
-      userId: user.clerkId,
-      requested: 1,
-    });
-
-    if (decision.isDenied()) {
-      if (decision.reason.isRateLimit()) {
-        throw new Error(
-          `Monthly AI recipe limit reached. ${
-            isPro
-              ? "Please contact support."
-              : "Upgrade to Pro for unlimited recipes!"
-          }`
-        );
-      }
-      throw new Error("Request denied");
-    }
 
     const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite" });
 
@@ -350,6 +328,7 @@ Guidelines:
       isSaved: false,
       fromDatabase: false,
       recommendationsLimit: isPro ? "unlimited" : 5,
+      isPro,
       message: "Recipe generated and saved successfully!",
     };
   } catch (error) {

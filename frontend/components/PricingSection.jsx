@@ -54,7 +54,7 @@ export default function PricingSection({ subscriptionTier = "free" }) {
             </ul>
           </CardContent>
 
-          <CardFooter>
+          <CardFooter className={"mt-auto"}>
             <Link href="/dashboard" className="w-full">
               <Button
                 variant="outline"
@@ -92,6 +92,8 @@ export default function PricingSection({ subscriptionTier = "free" }) {
                 "Unlimited AI recipes",
                 "Priority Support",
                 "Recipes with Nutritional analysis",
+                "Chef's Tips & Tricks",
+                "Ingredient Substitutions",
               ].map((item, i) => (
                 <li key={i} className="flex gap-3 text-orange-950">
                   <Badge className="bg-orange-200 p-1 rounded-full h-6 w-6 flex items-center justify-center border-none">

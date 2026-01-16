@@ -12,7 +12,6 @@ import {
   Lightbulb,
   Bookmark,
   BookmarkCheck,
-  Share2,
   Loader2,
   AlertCircle,
   CheckCircle2,
@@ -32,6 +31,7 @@ import Image from "next/image";
 import { PDFDownloadLink } from "@react-pdf/renderer";
 import { RecipePDF } from "@/components/RecipePDF";
 import { ClockLoader } from "react-spinners";
+import ProLockedSection from "@/components/ProLockedSection";
 
 function RecipeContent() {
   const searchParams = useSearchParams();
@@ -379,43 +379,57 @@ function RecipeContent() {
               {/* Nutrition Info */}
               {recipe.nutrition && (
                 <div className="mt-6 pt-6 border-t-2 border-stone-200">
-                  <h3 className="font-bold text-stone-900 mb-3 uppercase tracking-wide text-sm">
+                  <h3 className="font-bold text-stone-900 mb-3 uppercase tracking-wide text-sm flex items-center gap-2">
                     Nutrition (per serving)
+                    {!recipeData.isPro && (
+                      <span className="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full font-semibold">
+                        PRO
+                      </span>
+                    )}
                   </h3>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="bg-orange-50 p-3 text-center border-2 border-orange-100">
-                      <div className="text-2xl font-bold text-orange-600">
-                        {recipe.nutrition.calories}
+
+                  <ProLockedSection
+                    isPro={recipeData.isPro}
+                    lockText="Nutrition info is Pro-only"
+                  >
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="bg-orange-50 p-3 text-center border-2 border-orange-100">
+                        <div className="text-2xl font-bold text-orange-600">
+                          {recipe.nutrition.calories}
+                        </div>
+                        <div className="text-xs text-stone-500 font-bold uppercase tracking-wide">
+                          Calories
+                        </div>
                       </div>
-                      <div className="text-xs text-stone-500 font-bold uppercase tracking-wide">
-                        Calories
+
+                      <div className="bg-stone-50 p-3 text-center border-2 border-stone-100">
+                        <div className="text-2xl font-bold text-stone-900">
+                          {recipe.nutrition.protein}
+                        </div>
+                        <div className="text-xs text-stone-500 font-bold uppercase tracking-wide">
+                          Protein
+                        </div>
+                      </div>
+
+                      <div className="bg-stone-50 p-3 text-center border-2 border-stone-100">
+                        <div className="text-2xl font-bold text-stone-900">
+                          {recipe.nutrition.carbs}
+                        </div>
+                        <div className="text-xs text-stone-500 font-bold uppercase tracking-wide">
+                          Carbs
+                        </div>
+                      </div>
+
+                      <div className="bg-stone-50 p-3 text-center border-2 border-stone-100">
+                        <div className="text-2xl font-bold text-stone-900">
+                          {recipe.nutrition.fat}
+                        </div>
+                        <div className="text-xs text-stone-500 font-bold uppercase tracking-wide">
+                          Fat
+                        </div>
                       </div>
                     </div>
-                    <div className="bg-stone-50 p-3 text-center border-2 border-stone-100">
-                      <div className="text-2xl font-bold text-stone-900">
-                        {recipe.nutrition.protein}
-                      </div>
-                      <div className="text-xs text-stone-500 font-bold uppercase tracking-wide">
-                        Protein
-                      </div>
-                    </div>
-                    <div className="bg-stone-50 p-3 text-center border-2 border-stone-100">
-                      <div className="text-2xl font-bold text-stone-900">
-                        {recipe.nutrition.carbs}
-                      </div>
-                      <div className="text-xs text-stone-500 font-bold uppercase tracking-wide">
-                        Carbs
-                      </div>
-                    </div>
-                    <div className="bg-stone-50 p-3 text-center border-2 border-stone-100">
-                      <div className="text-2xl font-bold text-stone-900">
-                        {recipe.nutrition.fat}
-                      </div>
-                      <div className="text-xs text-stone-500 font-bold uppercase tracking-wide">
-                        Fat
-                      </div>
-                    </div>
-                  </div>
+                  </ProLockedSection>
                 </div>
               )}
             </div>
@@ -491,55 +505,82 @@ function RecipeContent() {
                 <h2 className="text-2xl font-bold text-stone-900 mb-4 flex items-center gap-2">
                   <Lightbulb className="w-6 h-6 text-orange-600 fill-orange-600" />
                   Chef&apos;s Tips & Tricks
+                  {!recipeData.isPro && (
+                    <span className="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full font-semibold">
+                      PRO
+                    </span>
+                  )}
                 </h2>
-                <ul className="space-y-3">
-                  {recipe.tips.map((tip, i) => (
-                    <li
-                      key={i}
-                      className="flex items-start gap-3 text-stone-700"
-                    >
-                      <CheckCircle2 className="w-5 h-5 text-orange-600 flex-shrink-0 mt-0.5" />
-                      <span className="font-light">{tip}</span>
-                    </li>
-                  ))}
-                </ul>
+
+                <ProLockedSection
+                  isPro={recipeData.isPro}
+                  lockText="Chef tips are Pro-only"
+                  ctaText="Unlock Pro Tips →"
+                >
+                  <ul className="space-y-3">
+                    {recipe.tips.map((tip, i) => (
+                      <li
+                        key={i}
+                        className="flex items-start gap-3 text-stone-700"
+                      >
+                        <CheckCircle2 className="w-5 h-5 text-orange-600 flex-shrink-0 mt-0.5" />
+                        <span className="font-light">{tip}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </ProLockedSection>
               </div>
             )}
 
             {/* Substitutions */}
             {recipe.substitutions && recipe.substitutions.length > 0 && (
               <div className="bg-white p-8 border-2 border-stone-200">
-                <h2 className="text-2xl font-bold text-stone-900 mb-4">
+                <h2 className="text-2xl font-bold text-stone-900 mb-4 flex items-center gap-2">
                   Ingredient Substitutions
+                  {!recipeData.isPro && (
+                    <span className="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full font-semibold">
+                      PRO
+                    </span>
+                  )}
                 </h2>
+
                 <p className="text-stone-600 mb-6 text-sm font-light">
                   Don&apos;t have everything? Here are some alternatives you can
                   use:
                 </p>
-                <div className="space-y-4">
-                  {recipe.substitutions.map((sub, i) => (
-                    <div
-                      key={i}
-                      className="border-b-2 border-stone-100 pb-4 last:border-0 last:pb-0"
-                    >
-                      <h3 className="font-bold text-stone-900 mb-2">
-                        Instead of{" "}
-                        <span className="text-orange-600">{sub.original}</span>:
-                      </h3>
-                      <div className="flex flex-wrap gap-2">
-                        {sub.alternatives.map((alt, j) => (
-                          <Badge
-                            key={j}
-                            variant="outline"
-                            className="text-stone-600 border-2 border-stone-200"
-                          >
-                            {alt}
-                          </Badge>
-                        ))}
+
+                <ProLockedSection
+                  isPro={recipeData.isPro}
+                  lockText="Substitutions are Pro-only"
+                >
+                  <div className="space-y-4">
+                    {recipe.substitutions.map((sub, i) => (
+                      <div
+                        key={i}
+                        className="border-b-2 border-stone-100 pb-4 last:border-0 last:pb-0"
+                      >
+                        <h3 className="font-bold text-stone-900 mb-2">
+                          Instead of{" "}
+                          <span className="text-orange-600">
+                            {sub.original}
+                          </span>
+                          :
+                        </h3>
+                        <div className="flex flex-wrap gap-2">
+                          {sub.alternatives.map((alt, j) => (
+                            <Badge
+                              key={j}
+                              variant="outline"
+                              className="text-stone-600 border-2 border-stone-200"
+                            >
+                              {alt}
+                            </Badge>
+                          ))}
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                </ProLockedSection>
               </div>
             )}
           </div>
