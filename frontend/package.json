@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@arcjet/next": "^1.0.0-beta.16",
-    "@clerk/nextjs": "^6.36.5",
+    "@clerk/nextjs": "^6.39.1",
     "@clerk/themes": "^2.4.46",
     "@google/generative-ai": "^0.24.1",
     "@radix-ui/react-dialog": "^1.1.15",
